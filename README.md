@@ -32,7 +32,7 @@ with their default settings:
 M.options = {
   symbol_bar = {' ', 'TermCursor'},  -- Bar symbol and highlight group
   symbol_track = {},                 -- Track symbol and highlight group (leave empty to not draw the track)
-  priority = 0,                      -- Priority of scrollbar (low value = high priority)
+  priority = 10,                     -- Priority of scrollbar (low value = high priority)
   exclude_buftypes = {},             -- Buftypes to exclude
   exclude_filetypes = {              -- Filetypes to exclude
     'qf',

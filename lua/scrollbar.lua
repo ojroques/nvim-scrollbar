@@ -20,7 +20,7 @@ local M = {}
 M.options = {
   symbol_bar = {' ', 'TermCursor'},  -- Bar symbol and highlight group
   symbol_track = {},                 -- Track symbol and highlight group
-  priority = 0,                      -- Priority of virtual text
+  priority = 10,                     -- Priority of virtual text
   exclude_buftypes = {},             -- Buftypes to exclude
   exclude_filetypes = {              -- Filetypes to exclude
     'qf',
