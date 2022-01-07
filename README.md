@@ -3,6 +3,8 @@
 A simple and fast scrollbar for Neovim. It is deliberately feature-less and will
 remain so.
 
+![demo](./demo.gif)
+
 ## Installation
 With [packer.nvim](https://github.com/wbthomason/packer.nvim):
 ```lua
@@ -53,7 +55,7 @@ M.options = {
 ## Related plugins
 * [petertriho's nvim-scrollbar](https://github.com/petertriho/nvim-scrollbar): a
   scrollbar for Neovim with more features.
-* [vim-scrollstatus](https://github.com/ojroques/vim-scrollstatus) a Vim plugin
+* [vim-scrollstatus](https://github.com/ojroques/vim-scrollstatus): a Vim plugin
   (also compatible with Neovim) to display a scrollbar in the statusline.
 
 ## License
