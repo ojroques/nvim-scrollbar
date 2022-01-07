@@ -18,8 +18,13 @@ local M = {}
 
 -------------------- OPTIONS -------------------------------
 M.options = {
-  symbol_bar = {' ', 'TermCursor'},  -- The bar symbol and highlight group
-  symbol_track = {},                 -- The track symbol and highlight group
+  symbol_bar = {' ', 'TermCursor'},  -- Bar symbol and highlight group
+  symbol_track = {},                 -- Track symbol and highlight group
+  priority = 0,                      -- Priority of virtual text
+  exclude_buftypes = {},             -- Buftypes to exclude
+  exclude_filetypes = {              -- Filetypes to exclude
+    'qf',
+  },
   render_events = {                  -- Events triggering the redraw of the bar
     'BufWinEnter',
     'CmdwinLeave',
@@ -45,7 +50,13 @@ end
 
 -------------------- SCROLLBAR -----------------------------
 local function is_excluded(bufnr)
-  return vim.fn.buflisted(bufnr) == 0 or vim.fn.getbufvar(bufnr, '&filetype') == 'qf'
+  local buftype = vim.fn.getbufvar(bufnr, '&buftype')
+  local filetype = vim.fn.getbufvar(bufnr, '&filetype')
+  local excluded = false
+  excluded = excluded or vim.fn.buflisted(bufnr) == 0
+  excluded = excluded or vim.tbl_contains(M.options.exclude_buftypes, buftype)
+  excluded = excluded or vim.tbl_contains(M.options.exclude_filetypes, filetype)
+  return excluded
 end
 
 local function get_bin_size(win_height, nb_lines)
@@ -69,26 +80,30 @@ local function get_bar_size(win_height, nb_lines, nb_visible_lines)
 end
 
 local function draw_bar(s)
-  local opts_bar = {virt_text = {M.options.symbol_bar}, virt_text_pos = 'right_align'}
-  local opts_track = {virt_text = {M.options.symbol_track}, virt_text_pos = 'right_align'}
   local start_line = s.first_visible_line + s.bin_start
+  local extmark_opts = {
+    virt_text_pos = 'right_align',
+    priority = M.options.priority,
+  }
 
   -- Clear scrollbar
   vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
 
   -- Draw bar
+  extmark_opts.virt_text = {M.options.symbol_bar}
   for line = start_line, start_line + s.bar_size do
     if line > s.nb_lines - 1 then
       break
     end
-    vim.api.nvim_buf_set_extmark(0, namespace, line, -1, opts_bar)
+    vim.api.nvim_buf_set_extmark(0, namespace, line, -1, extmark_opts)
   end
 
   -- Draw track
   if M.options.symbol_track and not vim.tbl_isempty(M.options.symbol_track) then
+    extmark_opts.virt_text = {M.options.symbol_track}
     for i = s.first_visible_line, s.last_visible_line do
       if i < start_line or i > start_line + s.bar_size then
-        vim.api.nvim_buf_set_extmark(0, namespace, i, -1, opts_track)
+        vim.api.nvim_buf_set_extmark(0, namespace, i, -1, extmark_opts)
       end
     end
   end
