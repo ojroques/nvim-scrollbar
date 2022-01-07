@@ -18,7 +18,6 @@ local M = {}
 -------------------- OPTIONS -------------------------------
 M.options = {
   symbol_bar = {' ', 'TermCursor'},  -- Bar symbol and highlight group
-  symbol_track = {},                 -- Track symbol and highlight group
   priority = 10,                     -- Priority of virtual text
   exclude_buftypes = {},             -- Buftypes to exclude
   exclude_filetypes = {              -- Filetypes to exclude
@@ -59,7 +58,7 @@ local function is_excluded(bufnr)
 end
 
 local function get_bar_start(win_height, nb_lines, first_visible_line)
-  local bar_start = math.floor(first_visible_line * (win_height / nb_lines))
+  local bar_start = math.floor(win_height * (first_visible_line / nb_lines))
   if bar_start > win_height - 1 then
     bar_start = win_height - 1
   end
@@ -72,30 +71,18 @@ end
 
 local function draw_bar(s)
   local extmark_opts = {
+    virt_text = {M.options.symbol_bar},
     virt_text_pos = 'right_align',
     priority = M.options.priority,
   }
 
-  -- Clear scrollbar
   vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
 
-  -- Draw bar
-  extmark_opts.virt_text = {M.options.symbol_bar}
   for line = s.bar_start, s.bar_start + s.bar_size do
     if line > s.nb_lines - 1 then
       break
     end
     vim.api.nvim_buf_set_extmark(0, namespace, line, -1, extmark_opts)
-  end
-
-  -- Draw track
-  if M.options.symbol_track and not vim.tbl_isempty(M.options.symbol_track) then
-    extmark_opts.virt_text = {M.options.symbol_track}
-    for i = s.first_visible_line, s.last_visible_line do
-      if i < s.bar_start or i > s.bar_start + s.bar_size then
-        vim.api.nvim_buf_set_extmark(0, namespace, i, -1, extmark_opts)
-      end
-    end
   end
 end
 
