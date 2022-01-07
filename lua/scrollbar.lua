@@ -11,8 +11,7 @@ local state = {
   first_visible_line = -1,
   last_visible_line = -1,
   bar_size = -1,
-  bin_size = -1,
-  bin_start = -1,
+  bar_start = -1,
 }
 local M = {}
 
@@ -59,20 +58,12 @@ local function is_excluded(bufnr)
   return excluded
 end
 
-local function get_bin_size(win_height, nb_lines)
-  local bin_size = math.floor(nb_lines / win_height + 0.5)
-  if bin_size < 1 then
-    bin_size = 1
+local function get_bar_start(win_height, nb_lines, first_visible_line)
+  local bar_start = math.floor(first_visible_line * (win_height / nb_lines))
+  if bar_start > win_height - 1 then
+    bar_start = win_height - 1
   end
-  return bin_size
-end
-
-local function get_bin_start(win_height, bin_size, first_visible_line)
-  local bin_start = math.floor(first_visible_line / bin_size)
-  if bin_start > win_height - 1 then
-    bin_start = win_height - 1
-  end
-  return bin_start
+  return first_visible_line + bar_start
 end
 
 local function get_bar_size(win_height, nb_lines, nb_visible_lines)
@@ -80,7 +71,6 @@ local function get_bar_size(win_height, nb_lines, nb_visible_lines)
 end
 
 local function draw_bar(s)
-  local start_line = s.first_visible_line + s.bin_start
   local extmark_opts = {
     virt_text_pos = 'right_align',
     priority = M.options.priority,
@@ -91,7 +81,7 @@ local function draw_bar(s)
 
   -- Draw bar
   extmark_opts.virt_text = {M.options.symbol_bar}
-  for line = start_line, start_line + s.bar_size do
+  for line = s.bar_start, s.bar_start + s.bar_size do
     if line > s.nb_lines - 1 then
       break
     end
@@ -102,7 +92,7 @@ local function draw_bar(s)
   if M.options.symbol_track and not vim.tbl_isempty(M.options.symbol_track) then
     extmark_opts.virt_text = {M.options.symbol_track}
     for i = s.first_visible_line, s.last_visible_line do
-      if i < start_line or i > start_line + s.bar_size then
+      if i < s.bar_start or i > s.bar_start + s.bar_size then
         vim.api.nvim_buf_set_extmark(0, namespace, i, -1, extmark_opts)
       end
     end
@@ -129,7 +119,6 @@ function M.render()
 
   if not same_nb_lines() then
     state.nb_lines = vim.api.nvim_buf_line_count(0)
-    state.bin_size = get_bin_size(state.win_height, state.nb_lines)
   end
 
   if not same_window() then
@@ -138,7 +127,7 @@ function M.render()
     state.nb_visible_lines = state.last_visible_line - state.first_visible_line + 1
   end
 
-  state.bin_start = get_bin_start(state.win_height, state.bin_size, state.first_visible_line)
+  state.bar_start = get_bar_start(state.win_height, state.nb_lines, state.first_visible_line)
   state.bar_size = get_bar_size(state.win_height, state.nb_lines, state.nb_visible_lines)
 
   draw_bar(state)
