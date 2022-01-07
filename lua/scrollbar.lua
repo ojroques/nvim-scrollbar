@@ -95,12 +95,10 @@ function M.render()
   state.win_height = vim.api.nvim_win_get_height(0)
 
   if vim.fn.line('w$') < vim.fn.line('w0') then
-    draw_bar(state)
     return
   end
 
   if same_nb_lines() and same_window() then
-    draw_bar(state)
     return
   end
 
