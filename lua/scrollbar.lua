@@ -10,8 +10,8 @@ local state = {
   nb_visible_lines = -1,
   first_visible_line = -1,
   last_visible_line = -1,
-  bar_size = -1,
   bar_start = -1,
+  bar_end = -1,
 }
 local M = {}
 
@@ -59,14 +59,12 @@ end
 
 local function get_bar_start(win_height, nb_lines, first_visible_line)
   local bar_start = math.floor(win_height * (first_visible_line / nb_lines))
-  if bar_start > win_height - 1 then
-    bar_start = win_height - 1
-  end
-  return first_visible_line + bar_start
+  return math.min(win_height - 1, bar_start)
 end
 
-local function get_bar_size(win_height, nb_lines, nb_visible_lines)
-  return math.floor(win_height * (nb_visible_lines / nb_lines) + 0.5)
+local function get_bar_end(win_height, nb_lines, nb_visible_lines, bar_start)
+  local bar_size = math.floor(win_height * (nb_visible_lines / nb_lines) + 0.5)
+  return math.min(win_height - 1, bar_start + bar_size)
 end
 
 local function draw_bar(s)
@@ -78,7 +76,7 @@ local function draw_bar(s)
 
   vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
 
-  for line = s.bar_start, s.bar_start + s.bar_size do
+  for line = s.first_visible_line + s.bar_start, s.first_visible_line + s.bar_end do
     if line > s.nb_lines - 1 then
       break
     end
@@ -87,7 +85,7 @@ local function draw_bar(s)
 end
 
 function M.render()
-  if is_excluded(vim.fn.bufnr()) then
+  if is_excluded(vim.api.nvim_get_current_buf()) then
     vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
     return
   end
@@ -113,7 +111,7 @@ function M.render()
   end
 
   state.bar_start = get_bar_start(state.win_height, state.nb_lines, state.first_visible_line)
-  state.bar_size = get_bar_size(state.win_height, state.nb_lines, state.nb_visible_lines)
+  state.bar_end = get_bar_end(state.win_height, state.nb_lines, state.nb_visible_lines, state.bar_start)
 
   draw_bar(state)
 end
