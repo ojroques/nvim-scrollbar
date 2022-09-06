@@ -3,7 +3,7 @@
 A simple and fast scrollbar for Neovim. It is deliberately feature-less and will
 remain so.
 
-![demo](./demo.gif)
+![demo](https://user-images.githubusercontent.com/23409060/188606407-c4465f38-e66d-46c7-a7ff-ac8a40fb1e73.gif)
 
 ## Installation
 With [packer.nvim](https://github.com/wbthomason/packer.nvim):
